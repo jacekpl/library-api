@@ -32,6 +32,12 @@ final class BookController extends AbstractController
         return $this->json($this->books->getBook($serialNumber));
     }
 
+    #[Route('/{serialNumber}/history', methods: ['GET'], requirements: ['serialNumber' => '\d{6}'])]
+    public function history(string $serialNumber): JsonResponse
+    {
+        return $this->json($this->books->bookHistory($serialNumber));
+    }
+
     #[Route('', methods: ['POST'])]
     public function create(#[MapRequestPayload] CreateBookRequest $request): JsonResponse
     {

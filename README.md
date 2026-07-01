@@ -60,6 +60,7 @@ Base path: `/api/books`. All requests and responses use JSON.
 |----------|---------------------------------|--------------------------------|---------|
 | `GET`    | `/api/books`                    | List all books                 | `200`   |
 | `GET`    | `/api/books/{serialNumber}`     | Get a single book              | `200`   |
+| `GET`    | `/api/books/{serialNumber}/history` | Get the borrow/return history | `200` |
 | `POST`   | `/api/books`                    | Add a new book                 | `201`   |
 | `DELETE` | `/api/books/{serialNumber}`     | Delete a book                  | `204`   |
 | `POST`   | `/api/books/{serialNumber}/borrow` | Mark a book as borrowed     | `200`   |
@@ -196,6 +197,14 @@ docker compose run --rm -e APP_ENV=test app sh -lc "\
 - **Concurrency.** `Book` carries an optimistic-lock version, so two borrow
   requests racing on the same copy cannot both succeed: the losing flush is
   turned into a `409 Conflict` instead of silently double-lending.
+- **History.** The `borrowedBy`/`borrowedAt` fields are only the *current* state.
+  The full record lives in an append-only `BookEvent` log: `Book::borrow()` and
+  `returnToShelf()` record an immutable event (type, card number, timestamp) into
+  a `OneToMany` collection that cascades on persist, so the state change and the
+  event are written in a single transaction. Events have no setters and are never
+  modified. History is part of the `Book` aggregate, so deleting a book removes
+  its history too (`ON DELETE CASCADE`); if the log had to outlive the book, it
+  would become a standalone entity keyed by serial number.
 - **Serial number** is the business identifier used in the API routes. The primary
   key is a separate, internal UUID (v7, time-ordered for index locality) assigned
   in the constructor — so an entity has a non-null identity the moment it is
@@ -210,10 +219,13 @@ src/
 │   ├── BookController.php             HTTP endpoints
 │   └── DocumentationController.php    serves Swagger UI at /docs
 ├── Dto/                               validated request payloads
-├── Entity/Book.php                    domain model + Doctrine mapping
+├── Entity/
+│   ├── Book.php                       aggregate: state + borrow/return + history
+│   ├── BookEvent.php                  immutable borrow/return event
+│   └── BookEventType.php              borrowed | returned
 ├── EventListener/ApiExceptionListener.php
 ├── Exception/                         domain exceptions (ApiException)
-├── Serializer/BookNormalizer.php      shapes the JSON responses
+├── Serializer/                        BookNormalizer + BookEventNormalizer
 ├── Repository/
 │   ├── BookRepositoryInterface.php    persistence port
 │   └── BookRepository.php             Doctrine adapter

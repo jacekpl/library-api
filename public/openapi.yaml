@@ -82,6 +82,24 @@ paths:
           description: The book was deleted
         '404':
           $ref: '#/components/responses/NotFound'
+  /api/books/{serialNumber}/history:
+    parameters:
+      - $ref: '#/components/parameters/serialNumber'
+    get:
+      tags: [Books]
+      summary: Get the borrow/return history of a book
+      operationId: getBookHistory
+      responses:
+        '200':
+          description: The book's events, ordered from oldest to newest
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookEvent'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /api/books/{serialNumber}/borrow:
     parameters:
       - $ref: '#/components/parameters/serialNumber'
@@ -223,6 +241,22 @@ components:
           type: string
           pattern: '^\d{6}$'
           example: '654321'
+    BookEvent:
+      type: object
+      required: [type, cardNumber, occurredAt]
+      properties:
+        type:
+          type: string
+          enum: [borrowed, returned]
+          example: borrowed
+        cardNumber:
+          type: string
+          pattern: '^\d{6}$'
+          example: '654321'
+        occurredAt:
+          type: string
+          format: date-time
+          example: '2026-07-01T20:27:23+00:00'
     Error:
       type: object
       required: [error]

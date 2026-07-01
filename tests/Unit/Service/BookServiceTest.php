@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Service;
 
 use App\Dto\CreateBookRequest;
+use App\Entity\BookEventType;
 use App\Exception\BookAlreadyBorrowedException;
 use App\Exception\BookNotBorrowedException;
 use App\Exception\BookNotFoundException;
@@ -110,5 +111,21 @@ final class BookServiceTest extends TestCase
 
         self::assertFalse($book->isBorrowed());
         self::assertNull($book->borrowedByCardNumber());
+    }
+
+    public function testHistoryRecordsEveryBorrowAndReturnInOrder(): void
+    {
+        $this->service->addBook(new CreateBookRequest('123456', 'Clean Code', 'Robert C. Martin'));
+        $this->service->borrowBook('123456', '654321');
+        $this->clock->sleep(3600);
+        $this->service->returnBook('123456');
+
+        $history = $this->service->bookHistory('123456');
+
+        self::assertCount(2, $history);
+        self::assertSame(BookEventType::Borrowed, $history[0]->type());
+        self::assertSame('654321', $history[0]->cardNumber());
+        self::assertSame(BookEventType::Returned, $history[1]->type());
+        self::assertSame('654321', $history[1]->cardNumber());
     }
 }

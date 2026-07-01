@@ -7,6 +7,8 @@ namespace App\Entity;
 use App\Exception\BookAlreadyBorrowedException;
 use App\Exception\BookNotBorrowedException;
 use App\Repository\BookRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
@@ -40,12 +42,20 @@ class Book
     #[ORM\Column(type: Types::INTEGER)]
     private int $version = 1;
 
+    /**
+     * @var Collection<int, BookEvent>
+     */
+    #[ORM\OneToMany(targetEntity: BookEvent::class, mappedBy: 'book', cascade: ['persist'])]
+    #[ORM\OrderBy(['occurredAt' => 'ASC', 'id' => 'ASC'])]
+    private Collection $events;
+
     public function __construct(string $serialNumber, string $title, string $author)
     {
         $this->id = Uuid::v7();
         $this->serialNumber = $serialNumber;
         $this->title = $title;
         $this->author = $author;
+        $this->events = new ArrayCollection();
     }
 
     public function id(): Uuid
@@ -91,15 +101,25 @@ class Book
 
         $this->borrowedByCardNumber = $cardNumber;
         $this->borrowedAt = $borrowedAt;
+        $this->events->add(BookEvent::borrowed($this, $cardNumber, $borrowedAt));
     }
 
-    public function returnToShelf(): void
+    public function returnToShelf(\DateTimeImmutable $returnedAt): void
     {
         if (!$this->isBorrowed()) {
             throw new BookNotBorrowedException($this->serialNumber);
         }
 
+        $this->events->add(BookEvent::returned($this, (string) $this->borrowedByCardNumber, $returnedAt));
         $this->borrowedByCardNumber = null;
         $this->borrowedAt = null;
+    }
+
+    /**
+     * @return BookEvent[]
+     */
+    public function events(): array
+    {
+        return $this->events->toArray();
     }
 }

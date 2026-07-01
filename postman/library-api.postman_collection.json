@@ -35,6 +35,18 @@
       }
     },
     {
+      "name": "Get borrow/return history",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/api/books/{{serialNumber}}/history",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "books", "{{serialNumber}}", "history" ]
+        }
+      }
+    },
+    {
       "name": "Add a new book",
       "request": {
         "method": "POST",

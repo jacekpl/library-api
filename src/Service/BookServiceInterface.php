@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Dto\CreateBookRequest;
 use App\Entity\Book;
+use App\Entity\BookEvent;
 
 interface BookServiceInterface
 {
@@ -23,4 +24,9 @@ interface BookServiceInterface
     public function returnBook(string $serialNumber): Book;
 
     public function getBook(string $serialNumber): Book;
+
+    /**
+     * @return BookEvent[]
+     */
+    public function bookHistory(string $serialNumber): array;
 }

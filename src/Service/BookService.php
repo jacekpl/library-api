@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Dto\CreateBookRequest;
 use App\Entity\Book;
+use App\Entity\BookEvent;
 use App\Exception\BookNotFoundException;
 use App\Exception\DuplicateSerialNumberException;
 use App\Repository\BookRepositoryInterface;
@@ -56,10 +57,18 @@ final class BookService implements BookServiceInterface
     public function returnBook(string $serialNumber): Book
     {
         $book = $this->getBook($serialNumber);
-        $book->returnToShelf();
+        $book->returnToShelf($this->clock->now());
         $this->books->save($book);
 
         return $book;
+    }
+
+    /**
+     * @return BookEvent[]
+     */
+    public function bookHistory(string $serialNumber): array
+    {
+        return $this->getBook($serialNumber)->events();
     }
 
     public function getBook(string $serialNumber): Book

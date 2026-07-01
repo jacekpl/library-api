@@ -208,4 +208,50 @@ final class BookApiTest extends ApiTestCase
 
         self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }
+
+    public function testHistoryIsEmptyForANeverBorrowedBook(): void
+    {
+        $this->persistBook('700001');
+
+        $this->jsonRequest('GET', '/api/books/700001/history');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame([], $this->responseData());
+    }
+
+    public function testHistoryRecordsBorrowAndReturnEvents(): void
+    {
+        $this->persistBook('700002');
+        $this->jsonRequest('POST', '/api/books/700002/borrow', ['cardNumber' => '654321']);
+        $this->jsonRequest('POST', '/api/books/700002/return');
+
+        $this->jsonRequest('GET', '/api/books/700002/history');
+
+        self::assertResponseIsSuccessful();
+        $history = $this->responseData();
+        self::assertCount(2, $history);
+        self::assertSame('borrowed', $history[0]['type']);
+        self::assertSame('654321', $history[0]['cardNumber']);
+        self::assertNotNull($history[0]['occurredAt']);
+        self::assertSame('returned', $history[1]['type']);
+        self::assertSame('654321', $history[1]['cardNumber']);
+    }
+
+    public function testHistoryOfAMissingBookReturnsNotFound(): void
+    {
+        $this->jsonRequest('GET', '/api/books/999999/history');
+
+        self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        self::assertSame('book_not_found', $this->responseData()['error']['code']);
+    }
+
+    public function testDeletingABookAlsoRemovesItsHistory(): void
+    {
+        $this->persistBook('700003');
+        $this->jsonRequest('POST', '/api/books/700003/borrow', ['cardNumber' => '654321']);
+
+        $this->jsonRequest('DELETE', '/api/books/700003');
+
+        self::assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+    }
 }
