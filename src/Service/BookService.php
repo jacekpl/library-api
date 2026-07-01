@@ -10,6 +10,7 @@ use App\Entity\BookEvent;
 use App\Exception\BookNotFoundException;
 use App\Exception\DuplicateSerialNumberException;
 use App\Repository\BookRepositoryInterface;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Symfony\Component\Clock\ClockInterface;
 
 final class BookService implements BookServiceInterface
@@ -27,7 +28,12 @@ final class BookService implements BookServiceInterface
         }
 
         $book = new Book($request->serialNumber, $request->title, $request->author);
-        $this->books->save($book);
+
+        try {
+            $this->books->save($book);
+        } catch (UniqueConstraintViolationException) {
+            throw new DuplicateSerialNumberException($request->serialNumber);
+        }
 
         return $book;
     }

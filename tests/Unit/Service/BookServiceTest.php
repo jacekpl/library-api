@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Service;
 
 use App\Dto\CreateBookRequest;
+use App\Entity\Book;
 use App\Entity\BookEventType;
 use App\Exception\BookAlreadyBorrowedException;
 use App\Exception\BookNotBorrowedException;
 use App\Exception\BookNotFoundException;
 use App\Exception\DuplicateSerialNumberException;
+use App\Repository\BookRepositoryInterface;
 use App\Service\BookService;
 use App\Tests\Double\InMemoryBookRepository;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
 
@@ -44,6 +47,35 @@ final class BookServiceTest extends TestCase
         $this->expectException(DuplicateSerialNumberException::class);
 
         $this->service->addBook(new CreateBookRequest('123456', 'Other', 'Someone'));
+    }
+
+    public function testAConcurrentInsertHittingTheUniqueConstraintIsReportedAsConflict(): void
+    {
+        $repository = new class() implements BookRepositoryInterface {
+            public function findOneBySerialNumber(string $serialNumber): ?Book
+            {
+                return null;
+            }
+
+            public function findAllOrderedBySerialNumber(): array
+            {
+                return [];
+            }
+
+            public function save(Book $book): void
+            {
+                throw (new \ReflectionClass(UniqueConstraintViolationException::class))->newInstanceWithoutConstructor();
+            }
+
+            public function remove(Book $book): void
+            {
+            }
+        };
+        $service = new BookService($repository, $this->clock);
+
+        $this->expectException(DuplicateSerialNumberException::class);
+
+        $service->addBook(new CreateBookRequest('123456', 'Clean Code', 'Robert C. Martin'));
     }
 
     public function testListingReturnsBooksOrderedBySerialNumber(): void
