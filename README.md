@@ -213,7 +213,9 @@ src/
 ├── Repository/
 │   ├── BookRepositoryInterface.php    persistence port
 │   └── BookRepository.php             Doctrine adapter
-└── Service/BookService.php            use cases
+└── Service/
+    ├── BookServiceInterface.php       use-case port (controllers depend on this)
+    └── BookService.php                use cases
 tests/
 ├── Unit/Entity/BookTest.php
 ├── Unit/Service/BookServiceTest.php   service tested against the in-memory double

@@ -7,7 +7,7 @@ namespace App\Controller;
 use App\Dto\BookResponse;
 use App\Dto\BorrowBookRequest;
 use App\Dto\CreateBookRequest;
-use App\Service\BookService;
+use App\Service\BookServiceInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +17,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/books')]
 final class BookController extends AbstractController
 {
-    public function __construct(private readonly BookService $books)
+    public function __construct(private readonly BookServiceInterface $books)
     {
     }
 

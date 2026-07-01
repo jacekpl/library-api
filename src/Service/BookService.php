@@ -11,7 +11,7 @@ use App\Exception\DuplicateSerialNumberException;
 use App\Repository\BookRepositoryInterface;
 use Symfony\Component\Clock\ClockInterface;
 
-final class BookService
+final class BookService implements BookServiceInterface
 {
     public function __construct(
         private readonly BookRepositoryInterface $books,
