@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   quality:
@@ -74,7 +75,10 @@ jobs:
   deploy:
     name: Deploy to production
     needs: [quality, tests]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.DEPLOY_ENABLED == 'true'
+    if: >-
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      && github.ref == 'refs/heads/main'
+      && vars.DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     concurrency:
       group: production-deploy
