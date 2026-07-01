@@ -84,7 +84,9 @@ jobs:
       group: production-deploy
       cancel-in-progress: false
     steps:
-      - name: Deploy over SSH
+      - uses: actions/checkout@v5
+
+      - name: Ship code and bring the app up
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
@@ -94,5 +96,9 @@ jobs:
           printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          rsync -az --delete \
+            --exclude='.git/' --exclude='var/' --exclude='vendor/' --exclude='.env.local' \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            ./ "$DEPLOY_USER@$DEPLOY_HOST:/home/ubuntu/library-api/"
           ssh -i ~/.ssh/deploy_key "$DEPLOY_USER@$DEPLOY_HOST" \
-            "cd /home/ubuntu/library-api && git pull --ff-only && docker compose up -d --build && docker image prune -f"
+            "cd /home/ubuntu/library-api && docker compose up -d --build && docker image prune -f"

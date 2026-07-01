@@ -7,8 +7,10 @@ The application is deployed to a single host, served behind **nginx** (TLS via
 - Runtime: `docker compose` on the host (`/home/ubuntu/library-api`), app bound to
   `127.0.0.1:8088` by `docker-compose.override.yml`; nginx proxies `:443` → that port.
 - Delivery: the `deploy` job in `.github/workflows/ci.yml` runs after the
-  `quality` and `tests` jobs pass on `main`, connects over SSH, and runs
-  `git pull` + `docker compose up -d --build` (migrations run on container start).
+  `quality` and `tests` jobs pass on `main`. It **rsyncs the checked-out code** to
+  the host (no git on the server) and runs `docker compose up -d --build`
+  (migrations run on container start). The image — including `composer install` —
+  is built on the host, so only the source is shipped.
 
 ## ⚠️ SSH key hygiene
 
@@ -34,26 +36,26 @@ it on.
 
 ## First-time server setup
 
-Docker + the Compose plugin must already be installed. Then, on the server:
+Run the bootstrap once on the host (it needs `sudo` and `DOMAIN` must resolve to
+this server for certbot). It installs Docker, rsync, nginx and certbot, and wires
+nginx as a TLS reverse proxy — it does **not** need git or a clone:
 
 ```bash
-git clone https://github.com/jacekpl/library-api.git /home/ubuntu/library-api
-cd /home/ubuntu/library-api
 DOMAIN=library-api.opcode.me.uk CERTBOT_EMAIL=you@example.com ./deploy/setup-server.sh
 ```
 
-`deploy/setup-server.sh` installs nginx + certbot, installs
-`deploy/nginx/library-api.opcode.me.uk.conf`, obtains the certificate (upgrading
-the site to HTTPS with an HTTP→HTTPS redirect), and starts the stack.
+(You can run it straight from a shell on the box; it's self-contained — no
+repository checkout required.)
 
 ## Continuous deployment
 
 Once the secrets and `DEPLOY_ENABLED=true` are in place, every push to `main`
 that passes CI deploys automatically. The `deploy` job:
 
-1. writes the SSH key from the secret to the runner,
-2. connects to `DEPLOY_USER@DEPLOY_HOST`,
-3. `git pull --ff-only && docker compose up -d --build && docker image prune -f`.
+1. checks out the code and writes the SSH key from the secret to the runner,
+2. `rsync`s the working tree to `DEPLOY_USER@DEPLOY_HOST:/home/ubuntu/library-api`
+   (excluding `.git`, `var`, `vendor`),
+3. `docker compose up -d --build && docker image prune -f` on the host.
 
 ## Notes
 

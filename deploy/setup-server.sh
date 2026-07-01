@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 #
 # One-time server bootstrap for the production host.
-# Installs nginx + certbot, wires the reverse proxy, obtains a TLS certificate
-# and starts the application with Docker Compose.
+# Installs Docker, rsync, nginx and certbot, then wires nginx as a TLS reverse
+# proxy in front of the app. It does NOT fetch or start the app itself — the CI
+# "Deploy" job ships the code with rsync and runs docker compose.
 #
 # Run it ON the server (as a sudo-capable user), e.g.:
 #   DOMAIN=library-api.opcode.me.uk CERTBOT_EMAIL=you@example.com ./deploy/setup-server.sh
@@ -11,35 +12,41 @@ set -euo pipefail
 
 DOMAIN="${DOMAIN:-library-api.opcode.me.uk}"
 CERTBOT_EMAIL="${CERTBOT_EMAIL:?Set CERTBOT_EMAIL to a valid email address for TLS registration}"
-APP_DIR="${APP_DIR:-/home/ubuntu/library-api}"
-REPO="${REPO:-https://github.com/jacekpl/library-api.git}"
+APP_PORT="${APP_PORT:-8088}"
 
-echo ">> Checking Docker"
-command -v docker >/dev/null || { echo "Docker is required but not installed"; exit 1; }
-docker compose version >/dev/null || { echo "Docker Compose plugin is required"; exit 1; }
-
-echo ">> Installing nginx and certbot"
+echo ">> Installing curl, rsync, nginx, certbot"
 sudo apt-get update
-sudo apt-get install -y nginx certbot python3-certbot-nginx
+sudo apt-get install -y curl rsync nginx certbot python3-certbot-nginx
 
-echo ">> Fetching the application into ${APP_DIR}"
-if [ -d "${APP_DIR}/.git" ]; then
-    git -C "${APP_DIR}" pull --ff-only
-else
-    git clone "${REPO}" "${APP_DIR}"
+echo ">> Installing Docker (if missing)"
+if ! command -v docker >/dev/null; then
+    curl -fsSL https://get.docker.com | sudo sh
+    sudo usermod -aG docker "$USER"
 fi
 
-echo ">> Installing the nginx site"
-sudo cp "${APP_DIR}/deploy/nginx/${DOMAIN}.conf" "/etc/nginx/sites-available/${DOMAIN}"
+echo ">> Configuring the nginx reverse proxy for ${DOMAIN}"
+sudo tee "/etc/nginx/sites-available/${DOMAIN}" >/dev/null <<NGINX
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ${DOMAIN};
+
+    location / {
+        proxy_pass http://127.0.0.1:${APP_PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+NGINX
 sudo ln -sf "/etc/nginx/sites-available/${DOMAIN}" "/etc/nginx/sites-enabled/${DOMAIN}"
 sudo nginx -t
 sudo systemctl reload nginx
 
-echo ">> Obtaining/renewing the TLS certificate"
+echo ">> Obtaining the TLS certificate (needs ${DOMAIN} to resolve to this host)"
 sudo certbot --nginx -d "${DOMAIN}" --non-interactive --agree-tos -m "${CERTBOT_EMAIL}" --redirect
 
-echo ">> Starting the application"
-cd "${APP_DIR}"
-docker compose up -d --build
-
-echo ">> Done. https://${DOMAIN}/docs should now be live."
+echo ">> Server is ready. Trigger the CI 'Deploy' job (or push to main) to ship the app."
+echo ">> It will then be served at https://${DOMAIN}/docs"
