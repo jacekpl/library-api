@@ -1,0 +1,100 @@
+{
+  "info": {
+    "name": "Library API",
+    "description": "REST API for a library information system. Set the `baseUrl` collection variable to your running instance (default http://localhost:8088).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8088" },
+    { "key": "serialNumber", "value": "123456" },
+    { "key": "cardNumber", "value": "654321" }
+  ],
+  "item": [
+    {
+      "name": "List all books",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/api/books",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "books" ]
+        }
+      }
+    },
+    {
+      "name": "Get a single book",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/api/books/{{serialNumber}}",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "books", "{{serialNumber}}" ]
+        }
+      }
+    },
+    {
+      "name": "Add a new book",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"serialNumber\": \"123456\",\n  \"title\": \"Clean Code\",\n  \"author\": \"Robert C. Martin\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/books",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "books" ]
+        }
+      }
+    },
+    {
+      "name": "Delete a book",
+      "request": {
+        "method": "DELETE",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/api/books/{{serialNumber}}",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "books", "{{serialNumber}}" ]
+        }
+      }
+    },
+    {
+      "name": "Borrow a book",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cardNumber\": \"654321\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/books/{{serialNumber}}/borrow",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "books", "{{serialNumber}}", "borrow" ]
+        }
+      }
+    },
+    {
+      "name": "Return a book",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/api/books/{{serialNumber}}/return",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "books", "{{serialNumber}}", "return" ]
+        }
+      }
+    }
+  ]
+}

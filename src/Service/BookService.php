@@ -8,15 +8,13 @@ use App\Dto\CreateBookRequest;
 use App\Entity\Book;
 use App\Exception\BookNotFoundException;
 use App\Exception\DuplicateSerialNumberException;
-use App\Repository\BookRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\BookRepositoryInterface;
 use Symfony\Component\Clock\ClockInterface;
 
 final class BookService
 {
     public function __construct(
-        private readonly BookRepository $books,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly BookRepositoryInterface $books,
         private readonly ClockInterface $clock,
     ) {
     }
@@ -28,8 +26,7 @@ final class BookService
         }
 
         $book = new Book($request->serialNumber, $request->title, $request->author);
-        $this->entityManager->persist($book);
-        $this->entityManager->flush();
+        $this->books->save($book);
 
         return $book;
     }
@@ -44,17 +41,14 @@ final class BookService
 
     public function removeBook(string $serialNumber): void
     {
-        $book = $this->getBook($serialNumber);
-
-        $this->entityManager->remove($book);
-        $this->entityManager->flush();
+        $this->books->remove($this->getBook($serialNumber));
     }
 
     public function borrowBook(string $serialNumber, string $cardNumber): Book
     {
         $book = $this->getBook($serialNumber);
         $book->borrow($cardNumber, $this->clock->now());
-        $this->entityManager->flush();
+        $this->books->save($book);
 
         return $book;
     }
@@ -63,7 +57,7 @@ final class BookService
     {
         $book = $this->getBook($serialNumber);
         $book->returnToShelf();
-        $this->entityManager->flush();
+        $this->books->save($book);
 
         return $book;
     }

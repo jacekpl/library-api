@@ -139,6 +139,17 @@ Validation errors (`422`) additionally list the offending fields:
 | `409`  | Duplicate serial number / borrowing a borrowed book / returning an available one |
 | `422`  | Invalid payload (bad serial/card number, missing title/author)   |
 
+## Interactive documentation
+
+An OpenAPI 3.0 specification is served with the application:
+
+- **Swagger UI:** http://localhost:8088/docs — browse and try the endpoints.
+- **Raw spec:** http://localhost:8088/openapi.yaml (also in `public/openapi.yaml`).
+
+A **Postman collection** is provided at
+`postman/library-api.postman_collection.json` — import it and set the `baseUrl`
+variable (defaults to `http://localhost:8088`).
+
 ## Tests
 
 The project is developed test-first. Run the full suite (unit + functional) with:
@@ -171,6 +182,10 @@ docker compose run --rm -e APP_ENV=test app sh -lc "\
   orchestrates the domain and persistence. Request payloads are validated DTOs
   (`#[MapRequestPayload]`); responses go through a `BookResponse` view so the API
   contract is explicit and decoupled from the entity.
+- **Persistence behind an interface.** `BookService` depends on
+  `BookRepositoryInterface`, not on Doctrine directly. The production adapter is
+  `BookRepository` (Doctrine); unit tests use a tiny `InMemoryBookRepository`, so
+  the service's behaviour is tested with no database at all.
 - **Error handling.** Domain exceptions carry their own HTTP status via a small
   `ApiException` interface; a single `ApiExceptionListener` turns them (and
   validation failures) into the JSON envelope above, keeping the domain free of
@@ -188,16 +203,26 @@ docker compose run --rm -e APP_ENV=test app sh -lc "\
 
 ```
 src/
-├── Controller/BookController.php      HTTP endpoints
+├── Controller/
+│   ├── BookController.php             HTTP endpoints
+│   └── DocumentationController.php    serves Swagger UI at /docs
 ├── Dto/                               request/response payloads
 ├── Entity/Book.php                    domain model + Doctrine mapping
 ├── EventListener/ApiExceptionListener.php
 ├── Exception/                         domain exceptions (ApiException)
-├── Repository/BookRepository.php
+├── Repository/
+│   ├── BookRepositoryInterface.php    persistence port
+│   └── BookRepository.php             Doctrine adapter
 └── Service/BookService.php            use cases
 tests/
 ├── Unit/Entity/BookTest.php
-└── Functional/BookApiTest.php
+├── Unit/Service/BookServiceTest.php   service tested against the in-memory double
+├── Double/InMemoryBookRepository.php
+└── Functional/                        full HTTP + database tests
 migrations/                            schema (book table)
+public/
+├── openapi.yaml                       OpenAPI 3.0 specification
+└── docs/index.html                    Swagger UI
+postman/                               Postman collection
 docker/frankenphp/                     Dockerfile + entrypoint
 ```

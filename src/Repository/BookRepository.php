@@ -11,7 +11,7 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<Book>
  */
-class BookRepository extends ServiceEntityRepository
+class BookRepository extends ServiceEntityRepository implements BookRepositoryInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -23,14 +23,25 @@ class BookRepository extends ServiceEntityRepository
         return $this->findOneBy(['serialNumber' => $serialNumber]);
     }
 
-    /**
-     * @return Book[]
-     */
     public function findAllOrderedBySerialNumber(): array
     {
         return $this->createQueryBuilder('b')
             ->orderBy('b.serialNumber', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    public function save(Book $book): void
+    {
+        $entityManager = $this->getEntityManager();
+        $entityManager->persist($book);
+        $entityManager->flush();
+    }
+
+    public function remove(Book $book): void
+    {
+        $entityManager = $this->getEntityManager();
+        $entityManager->remove($book);
+        $entityManager->flush();
     }
 }

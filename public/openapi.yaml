@@ -1,0 +1,265 @@
+openapi: 3.0.3
+info:
+  title: Library API
+  description: >
+    REST API for a library information system. Library staff can register the
+    books the library owns, remove them, list them, and track whether each book
+    is currently borrowed (and by whom). Authentication is intentionally out of
+    scope for this exercise.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8088
+    description: Local (docker compose up, with the bundled override)
+  - url: http://localhost:8080
+    description: Local (base docker-compose.yml only)
+tags:
+  - name: Books
+    description: Manage books and their borrow state
+paths:
+  /api/books:
+    get:
+      tags: [Books]
+      summary: List all books
+      operationId: listBooks
+      responses:
+        '200':
+          description: The list of books, ordered by serial number
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+    post:
+      tags: [Books]
+      summary: Add a new book
+      operationId: addBook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookRequest'
+      responses:
+        '201':
+          description: The book was created
+          headers:
+            Location:
+              description: Path of the created book
+              schema:
+                type: string
+                example: /api/books/123456
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+  /api/books/{serialNumber}:
+    parameters:
+      - $ref: '#/components/parameters/serialNumber'
+    get:
+      tags: [Books]
+      summary: Get a single book
+      operationId: getBook
+      responses:
+        '200':
+          description: The requested book
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Books]
+      summary: Delete a book
+      operationId: deleteBook
+      responses:
+        '204':
+          description: The book was deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/books/{serialNumber}/borrow:
+    parameters:
+      - $ref: '#/components/parameters/serialNumber'
+    post:
+      tags: [Books]
+      summary: Mark a book as borrowed
+      operationId: borrowBook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorrowBookRequest'
+      responses:
+        '200':
+          description: The book is now borrowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+  /api/books/{serialNumber}/return:
+    parameters:
+      - $ref: '#/components/parameters/serialNumber'
+    post:
+      tags: [Books]
+      summary: Mark a book as available
+      operationId: returnBook
+      responses:
+        '200':
+          description: The book is now available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+components:
+  parameters:
+    serialNumber:
+      name: serialNumber
+      in: path
+      required: true
+      description: Six-digit book serial number
+      schema:
+        type: string
+        pattern: '^\d{6}$'
+      example: '123456'
+  responses:
+    NotFound:
+      description: The book does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: book_not_found
+              message: Book with serial number "999999" was not found.
+    Conflict:
+      description: The request conflicts with the current state
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: book_already_borrowed
+              message: Book with serial number "123456" is already borrowed.
+    ValidationFailed:
+      description: The payload is invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+          example:
+            error:
+              code: validation_failed
+              message: The submitted data is invalid.
+              violations:
+                - field: serialNumber
+                  message: The serial number must be a six-digit number.
+  schemas:
+    Book:
+      type: object
+      required: [serialNumber, title, author, borrowed, borrowedBy, borrowedAt]
+      properties:
+        serialNumber:
+          type: string
+          pattern: '^\d{6}$'
+          example: '123456'
+        title:
+          type: string
+          example: Clean Code
+        author:
+          type: string
+          example: Robert C. Martin
+        borrowed:
+          type: boolean
+          example: true
+        borrowedBy:
+          type: string
+          nullable: true
+          pattern: '^\d{6}$'
+          example: '654321'
+        borrowedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2026-07-01T20:27:23+00:00'
+    CreateBookRequest:
+      type: object
+      required: [serialNumber, title, author]
+      properties:
+        serialNumber:
+          type: string
+          pattern: '^\d{6}$'
+          example: '123456'
+        title:
+          type: string
+          maxLength: 255
+          example: Clean Code
+        author:
+          type: string
+          maxLength: 255
+          example: Robert C. Martin
+    BorrowBookRequest:
+      type: object
+      required: [cardNumber]
+      properties:
+        cardNumber:
+          type: string
+          pattern: '^\d{6}$'
+          example: '654321'
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              example: book_not_found
+            message:
+              type: string
+              example: Book with serial number "999999" was not found.
+    ValidationError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, violations]
+          properties:
+            code:
+              type: string
+              example: validation_failed
+            message:
+              type: string
+              example: The submitted data is invalid.
+            violations:
+              type: array
+              items:
+                type: object
+                required: [field, message]
+                properties:
+                  field:
+                    type: string
+                    example: serialNumber
+                  message:
+                    type: string
+                    example: The serial number must be a six-digit number.
