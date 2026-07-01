@@ -196,9 +196,11 @@ docker compose run --rm -e APP_ENV=test app sh -lc "\
 - **Concurrency.** `Book` carries an optimistic-lock version, so two borrow
   requests racing on the same copy cannot both succeed: the losing flush is
   turned into a `409 Conflict` instead of silently double-lending.
-- **Serial number** is the business identifier used in the API routes; an internal
-  auto-increment id is used as the primary key, with a unique constraint on the
-  serial number enforced at the database level.
+- **Serial number** is the business identifier used in the API routes. The primary
+  key is a separate, internal UUID (v7, time-ordered for index locality) assigned
+  in the constructor — so an entity has a non-null identity the moment it is
+  created, before it ever reaches the database. The serial number has its own
+  unique constraint at the database level.
 
 ### Project structure
 
