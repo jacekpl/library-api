@@ -10,7 +10,7 @@ jobs:
     name: Coding standards & static analysis
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -50,7 +50,7 @@ jobs:
       APP_ENV: test
       DATABASE_URL: "postgresql://app:app@127.0.0.1:5432/app?serverVersion=16&charset=utf8"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
