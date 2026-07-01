@@ -1,0 +1,9 @@
+/.git
+/.github
+/var
+/vendor
+/.env.local
+/.env.*.local
+/.phpunit.cache
+/.idea
+/docker-compose.override.yml
