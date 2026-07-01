@@ -6,7 +6,6 @@ namespace App\Entity;
 
 use App\Exception\BookAlreadyBorrowedException;
 use App\Exception\BookNotBorrowedException;
-use App\Repository\BookRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -14,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity(repositoryClass: BookRepository::class)]
+#[ORM\Entity]
 #[ORM\Table(name: 'book')]
 #[ORM\UniqueConstraint(name: 'uniq_book_serial_number', columns: ['serial_number'])]
 class Book

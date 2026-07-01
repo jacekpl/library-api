@@ -5,43 +5,33 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Book;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 
-/**
- * @extends ServiceEntityRepository<Book>
- */
-class BookRepository extends ServiceEntityRepository implements BookRepositoryInterface
+final class BookRepository implements BookRepositoryInterface
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(private readonly EntityManagerInterface $em)
     {
-        parent::__construct($registry, Book::class);
     }
 
     public function findOneBySerialNumber(string $serialNumber): ?Book
     {
-        return $this->findOneBy(['serialNumber' => $serialNumber]);
+        return $this->em->getRepository(Book::class)->findOneBy(['serialNumber' => $serialNumber]);
     }
 
     public function findAllOrderedBySerialNumber(): array
     {
-        return $this->createQueryBuilder('b')
-            ->orderBy('b.serialNumber', 'ASC')
-            ->getQuery()
-            ->getResult();
+        return $this->em->getRepository(Book::class)->findBy([], ['serialNumber' => 'ASC']);
     }
 
     public function save(Book $book): void
     {
-        $entityManager = $this->getEntityManager();
-        $entityManager->persist($book);
-        $entityManager->flush();
+        $this->em->persist($book);
+        $this->em->flush();
     }
 
     public function remove(Book $book): void
     {
-        $entityManager = $this->getEntityManager();
-        $entityManager->remove($book);
-        $entityManager->flush();
+        $this->em->remove($book);
+        $this->em->flush();
     }
 }
