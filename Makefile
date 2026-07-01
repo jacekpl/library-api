@@ -39,3 +39,15 @@ test: ## Run the test suite (unit + functional) in a throwaway container
 		php bin/console doctrine:database:create --if-not-exists && \
 		php bin/console doctrine:migrations:migrate --no-interaction && \
 		php vendor/bin/phpunit"
+
+.PHONY: cs
+cs: ## Check coding standards (PHP CS Fixer, dry-run)
+	$(COMPOSE) run --rm --no-deps app composer cs
+
+.PHONY: cs-fix
+cs-fix: ## Fix coding standards (PHP CS Fixer)
+	$(COMPOSE) run --rm --no-deps app composer cs-fix
+
+.PHONY: phpstan
+phpstan: ## Run static analysis (PHPStan)
+	$(COMPOSE) run --rm --no-deps app composer phpstan

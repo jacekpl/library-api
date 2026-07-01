@@ -51,7 +51,7 @@ final class BookServiceTest extends TestCase
 
     public function testAConcurrentInsertHittingTheUniqueConstraintIsReportedAsConflict(): void
     {
-        $repository = new class() implements BookRepositoryInterface {
+        $repository = new class implements BookRepositoryInterface {
             public function findOneBySerialNumber(string $serialNumber): ?Book
             {
                 return null;

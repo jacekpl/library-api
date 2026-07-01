@@ -1,5 +1,7 @@
 # Library API
 
+**English** | [Polski](README.pl.md)
+
 A small REST API for a library information system. Library staff can register the
 books the library owns, remove them, list them, and track whether each book is
 currently borrowed (and by whom).
@@ -148,8 +150,8 @@ An OpenAPI 3.0 specification is served with the application:
 - **Raw spec:** http://localhost:8088/openapi.yaml (also in `public/openapi.yaml`).
 
 A **Postman collection** is provided at
-`postman/library-api.postman_collection.json` — import it and set the `baseUrl`
-variable (defaults to `http://localhost:8088`).
+[`postman/library-api.postman_collection.json`](postman/library-api.postman_collection.json)
+— import it and set the `baseUrl` variable (defaults to `http://localhost:8088`).
 
 ## Tests
 
@@ -173,6 +175,16 @@ docker compose run --rm -e APP_ENV=test app sh -lc "\
 - **Functional tests** (`tests/Functional`) exercise the HTTP API against a real
   PostgreSQL database. Each test runs inside a transaction that is rolled back
   afterwards (via `dama/doctrine-test-bundle`), so they are isolated and fast.
+
+## Code quality & CI
+
+Static checks run in CI on every push and pull request
+(`.github/workflows/ci.yml`), next to the test suite:
+
+- **PHP CS Fixer** — `@Symfony` ruleset + strict types (`.php-cs-fixer.dist.php`).
+  Run `make cs` to check, `make cs-fix` to apply.
+- **PHPStan** — level 8 with the Doctrine/Symfony extensions (`phpstan.dist.neon`).
+  Run `make phpstan`.
 
 ## Design notes
 
@@ -244,4 +256,7 @@ public/
 └── docs/index.html                    Swagger UI
 postman/                               Postman collection
 docker/frankenphp/                     Dockerfile + entrypoint
+.php-cs-fixer.dist.php                  coding standards config
+phpstan.dist.neon                       static analysis config
+.github/workflows/ci.yml                CI pipeline (cs-fixer, phpstan, phpunit)
 ```
