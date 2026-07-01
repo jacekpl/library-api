@@ -195,11 +195,11 @@ Static checks run in CI on every push and pull request
 
 ## Deployment
 
-The app is deployed behind **nginx** (TLS via **certbot**) proxying to the Docker
-Compose stack, and released by the `deploy` job in the CI pipeline (SSH +
-`docker compose up -d --build` on every green push to `main`). Server setup, the
-required secrets, and SSH-key hygiene are documented in
-[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+Live at **https://library-api.opcode.me.uk**, behind **nginx** (TLS via **certbot**)
+proxying to the Docker Compose stack. The `deploy` job in the CI pipeline
+`rsync`s the code to the host and runs `docker compose up -d --build` on every
+green push to `main`. Server setup, the required secrets, and SSH-key hygiene are
+documented in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 ## Design notes
 
@@ -265,13 +265,15 @@ tests/
 ├── Unit/Serializer/BookNormalizerTest.php
 ├── Double/InMemoryBookRepository.php
 └── Functional/                        full HTTP + database tests
-migrations/                            schema (book table)
+migrations/                            schema (book + book_event tables)
 public/
 ├── openapi.yaml                       OpenAPI 3.0 specification
 └── docs/index.html                    Swagger UI
-postman/                               Postman collection
+postman/                               Postman collection + local/production environments
 docker/frankenphp/                     Dockerfile + entrypoint
+deploy/setup-server.sh                  one-time host bootstrap (Docker, nginx, certbot)
+docs/DEPLOYMENT.md                      deployment guide
 .php-cs-fixer.dist.php                  coding standards config
 phpstan.dist.neon                       static analysis config
-.github/workflows/ci.yml                CI pipeline (cs-fixer, phpstan, phpunit)
+.github/workflows/ci.yml                CI pipeline (cs-fixer, phpstan, phpunit, deploy)
 ```

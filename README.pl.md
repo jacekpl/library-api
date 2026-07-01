@@ -199,10 +199,11 @@ Analiza statyczna uruchamiana jest w CI przy każdym pushu i pull requeście
 
 ## Wdrożenie
 
-Aplikacja jest wdrażana za **nginx** (TLS przez **certbot**) pełniącym rolę reverse
-proxy do stosu Docker Compose i publikowana przez zadanie `deploy` w pipelinie CI
-(SSH + `docker compose up -d --build` przy każdym zielonym pushu do `main`).
-Konfiguracja serwera, wymagane sekrety oraz higiena klucza SSH są opisane w
+Działa pod adresem **https://library-api.opcode.me.uk**, za **nginx** (TLS przez
+**certbot**) pełniącym rolę reverse proxy do stosu Docker Compose. Zadanie `deploy`
+w pipelinie CI kopiuje kod na host przez `rsync` i uruchamia
+`docker compose up -d --build` przy każdym zielonym pushu do `main`. Konfiguracja
+serwera, wymagane sekrety oraz higiena klucza SSH są opisane w
 [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 ## Decyzje projektowe
@@ -268,13 +269,15 @@ tests/
 ├── Unit/Serializer/BookNormalizerTest.php
 ├── Double/InMemoryBookRepository.php
 └── Functional/                        pełne testy HTTP + bazy danych
-migrations/                            schemat (tabela book)
+migrations/                            schemat (tabele book + book_event)
 public/
 ├── openapi.yaml                       specyfikacja OpenAPI 3.0
 └── docs/index.html                    Swagger UI
-postman/                               kolekcja Postman
+postman/                               kolekcja Postman + środowiska local/production
 docker/frankenphp/                     Dockerfile + entrypoint
+deploy/setup-server.sh                  jednorazowy bootstrap hosta (Docker, nginx, certbot)
+docs/DEPLOYMENT.md                      przewodnik wdrożeniowy
 .php-cs-fixer.dist.php                  konfiguracja standardów kodowania
 phpstan.dist.neon                       konfiguracja analizy statycznej
-.github/workflows/ci.yml                pipeline CI (cs-fixer, phpstan, phpunit)
+.github/workflows/ci.yml                pipeline CI (cs-fixer, phpstan, phpunit, deploy)
 ```
