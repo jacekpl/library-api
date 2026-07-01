@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Dto\BookResponse;
 use App\Dto\BorrowBookRequest;
 use App\Dto\CreateBookRequest;
 use App\Service\BookServiceInterface;
@@ -24,15 +23,13 @@ final class BookController extends AbstractController
     #[Route('', methods: ['GET'])]
     public function list(): JsonResponse
     {
-        $books = array_map(BookResponse::fromEntity(...), $this->books->listBooks());
-
-        return $this->json($books);
+        return $this->json($this->books->listBooks());
     }
 
     #[Route('/{serialNumber}', methods: ['GET'], requirements: ['serialNumber' => '\d{6}'])]
     public function show(string $serialNumber): JsonResponse
     {
-        return $this->json(BookResponse::fromEntity($this->books->getBook($serialNumber)));
+        return $this->json($this->books->getBook($serialNumber));
     }
 
     #[Route('', methods: ['POST'])]
@@ -41,7 +38,7 @@ final class BookController extends AbstractController
         $book = $this->books->addBook($request);
 
         return $this->json(
-            BookResponse::fromEntity($book),
+            $book,
             Response::HTTP_CREATED,
             ['Location' => '/api/books/'.$book->serialNumber()],
         );
@@ -58,16 +55,12 @@ final class BookController extends AbstractController
     #[Route('/{serialNumber}/borrow', methods: ['POST'], requirements: ['serialNumber' => '\d{6}'])]
     public function borrow(string $serialNumber, #[MapRequestPayload] BorrowBookRequest $request): JsonResponse
     {
-        $book = $this->books->borrowBook($serialNumber, $request->cardNumber);
-
-        return $this->json(BookResponse::fromEntity($book));
+        return $this->json($this->books->borrowBook($serialNumber, $request->cardNumber));
     }
 
     #[Route('/{serialNumber}/return', methods: ['POST'], requirements: ['serialNumber' => '\d{6}'])]
     public function returnBook(string $serialNumber): JsonResponse
     {
-        $book = $this->books->returnBook($serialNumber);
-
-        return $this->json(BookResponse::fromEntity($book));
+        return $this->json($this->books->returnBook($serialNumber));
     }
 }

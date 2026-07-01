@@ -180,8 +180,9 @@ docker compose run --rm -e APP_ENV=test app sh -lc "\
   not in the controller.
 - **Layers.** Controllers stay thin: they map HTTP to a `BookService`, which
   orchestrates the domain and persistence. Request payloads are validated DTOs
-  (`#[MapRequestPayload]`); responses go through a `BookResponse` view so the API
-  contract is explicit and decoupled from the entity.
+  (`#[MapRequestPayload]`); controllers hand entities straight to `$this->json()`
+  and a dedicated `BookNormalizer` shapes the JSON, so the wire format is defined
+  in one place and the entity stays free of serialization concerns.
 - **Persistence behind an interface.** `BookService` depends on
   `BookRepositoryInterface`, not on Doctrine directly. The production adapter is
   `BookRepository` (Doctrine); unit tests use a tiny `InMemoryBookRepository`, so
@@ -206,10 +207,11 @@ src/
 ├── Controller/
 │   ├── BookController.php             HTTP endpoints
 │   └── DocumentationController.php    serves Swagger UI at /docs
-├── Dto/                               request/response payloads
+├── Dto/                               validated request payloads
 ├── Entity/Book.php                    domain model + Doctrine mapping
 ├── EventListener/ApiExceptionListener.php
 ├── Exception/                         domain exceptions (ApiException)
+├── Serializer/BookNormalizer.php      shapes the JSON responses
 ├── Repository/
 │   ├── BookRepositoryInterface.php    persistence port
 │   └── BookRepository.php             Doctrine adapter
@@ -219,6 +221,7 @@ src/
 tests/
 ├── Unit/Entity/BookTest.php
 ├── Unit/Service/BookServiceTest.php   service tested against the in-memory double
+├── Unit/Serializer/BookNormalizerTest.php
 ├── Double/InMemoryBookRepository.php
 └── Functional/                        full HTTP + database tests
 migrations/                            schema (book table)
