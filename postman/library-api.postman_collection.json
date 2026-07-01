@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Library API",
-    "description": "REST API for a library information system. Set the `baseUrl` collection variable to your running instance (default http://localhost:8088).",
+    "description": "REST API for a library information system. Pick an environment to switch `baseUrl` between local (http://localhost:8088) and production (https://library-api.opcode.me.uk): import library-api.local.postman_environment.json or library-api.production.postman_environment.json. Without an environment, the collection defaults to localhost.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [

@@ -10,6 +10,9 @@ Zbudowane w oparciu o **Symfony 7.4**, **Doctrine ORM 3**, **PostgreSQL 16** ora
 **FrankenPHP**, wraz z konfiguracją `docker compose`, która uruchamia działającą
 aplikację jednym poleceniem.
 
+> **Live:** https://library-api.opcode.me.uk — interaktywna dokumentacja pod
+> [/docs](https://library-api.opcode.me.uk/docs).
+
 ## Wymagania
 
 - Docker z wtyczką Compose (`docker compose`).
@@ -148,13 +151,17 @@ Błędy walidacji (`422`) dodatkowo wypisują niepoprawne pola:
 
 Wraz z aplikacją serwowana jest specyfikacja OpenAPI 3.0:
 
-- **Swagger UI:** http://localhost:8088/docs — przeglądaj i testuj endpointy.
-- **Surowa specyfikacja:** http://localhost:8088/openapi.yaml (również w
-  `public/openapi.yaml`).
+- **Swagger UI:** [`/docs`](https://library-api.opcode.me.uk/docs) — przeglądaj
+  i testuj endpointy. Użyj listy **Servers**, aby przełączać się między produkcją
+  a lokalnym środowiskiem.
+- **Surowa specyfikacja:** `/openapi.yaml` (również w `public/openapi.yaml`).
 
 Dołączona jest **kolekcja Postman**:
-[`postman/library-api.postman_collection.json`](postman/library-api.postman_collection.json)
-— zaimportuj ją i ustaw zmienną `baseUrl` (domyślnie `http://localhost:8088`).
+[`postman/library-api.postman_collection.json`](postman/library-api.postman_collection.json).
+Zaimportuj ją razem z jednym ze środowisk, aby ustawić `baseUrl` na właściwy host:
+
+- [`postman/library-api.local.postman_environment.json`](postman/library-api.local.postman_environment.json) — `http://localhost:8088`
+- [`postman/library-api.production.postman_environment.json`](postman/library-api.production.postman_environment.json) — `https://library-api.opcode.me.uk`
 
 ## Testy
 
@@ -189,6 +196,14 @@ Analiza statyczna uruchamiana jest w CI przy każdym pushu i pull requeście
   `make cs` sprawdza, `make cs-fix` naprawia.
 - **PHPStan** — poziom 8 z rozszerzeniami Doctrine/Symfony (`phpstan.dist.neon`).
   `make phpstan`.
+
+## Wdrożenie
+
+Aplikacja jest wdrażana za **nginx** (TLS przez **certbot**) pełniącym rolę reverse
+proxy do stosu Docker Compose i publikowana przez zadanie `deploy` w pipelinie CI
+(SSH + `docker compose up -d --build` przy każdym zielonym pushu do `main`).
+Konfiguracja serwera, wymagane sekrety oraz higiena klucza SSH są opisane w
+[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 ## Decyzje projektowe
 

@@ -10,6 +10,9 @@ Built with **Symfony 7.4**, **Doctrine ORM 3**, **PostgreSQL 16** and **FrankenP
 and shipped with a `docker compose` setup that boots a working application with a
 single command.
 
+> **Live:** https://library-api.opcode.me.uk — interactive docs at
+> [/docs](https://library-api.opcode.me.uk/docs).
+
 ## Requirements
 
 - Docker with the Compose plugin (`docker compose`).
@@ -146,12 +149,16 @@ Validation errors (`422`) additionally list the offending fields:
 
 An OpenAPI 3.0 specification is served with the application:
 
-- **Swagger UI:** http://localhost:8088/docs — browse and try the endpoints.
-- **Raw spec:** http://localhost:8088/openapi.yaml (also in `public/openapi.yaml`).
+- **Swagger UI:** [`/docs`](https://library-api.opcode.me.uk/docs) — browse and try
+  the endpoints. Use the **Servers** dropdown to switch between production and local.
+- **Raw spec:** `/openapi.yaml` (also in `public/openapi.yaml`).
 
 A **Postman collection** is provided at
-[`postman/library-api.postman_collection.json`](postman/library-api.postman_collection.json)
-— import it and set the `baseUrl` variable (defaults to `http://localhost:8088`).
+[`postman/library-api.postman_collection.json`](postman/library-api.postman_collection.json).
+Import it together with one of the environments to point `baseUrl` at the right host:
+
+- [`postman/library-api.local.postman_environment.json`](postman/library-api.local.postman_environment.json) — `http://localhost:8088`
+- [`postman/library-api.production.postman_environment.json`](postman/library-api.production.postman_environment.json) — `https://library-api.opcode.me.uk`
 
 ## Tests
 
@@ -185,6 +192,14 @@ Static checks run in CI on every push and pull request
   Run `make cs` to check, `make cs-fix` to apply.
 - **PHPStan** — level 8 with the Doctrine/Symfony extensions (`phpstan.dist.neon`).
   Run `make phpstan`.
+
+## Deployment
+
+The app is deployed behind **nginx** (TLS via **certbot**) proxying to the Docker
+Compose stack, and released by the `deploy` job in the CI pipeline (SSH +
+`docker compose up -d --build` on every green push to `main`). Server setup, the
+required secrets, and SSH-key hygiene are documented in
+[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 ## Design notes
 
