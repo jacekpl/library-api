@@ -2997,37 +2997,36 @@
         },
         {
             "name": "symfony/http-foundation",
-            "version": "v7.4.14",
+            "version": "v8.1.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-foundation.git",
-                "reference": "06db5ae1552177bf8572f8908839f12e3c06aed3"
+                "reference": "79325f87c3a2acc7564ddce9f457046e980e7255"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/06db5ae1552177bf8572f8908839f12e3c06aed3",
-                "reference": "06db5ae1552177bf8572f8908839f12e3c06aed3",
+                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/79325f87c3a2acc7564ddce9f457046e980e7255",
+                "reference": "79325f87c3a2acc7564ddce9f457046e980e7255",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.2",
+                "php": ">=8.4.1",
                 "symfony/deprecation-contracts": "^2.5|^3",
                 "symfony/polyfill-mbstring": "^1.1"
             },
             "conflict": {
-                "doctrine/dbal": "<3.6",
-                "symfony/cache": "<6.4.12|>=7.0,<7.1.5"
+                "doctrine/dbal": "<4.3"
             },
             "require-dev": {
-                "doctrine/dbal": "^3.6|^4",
+                "doctrine/dbal": "^4.3",
                 "predis/predis": "^1.1|^2.0",
-                "symfony/cache": "^6.4.12|^7.1.5|^8.0",
-                "symfony/clock": "^6.4|^7.0|^8.0",
-                "symfony/dependency-injection": "^6.4|^7.0|^8.0",
-                "symfony/expression-language": "^6.4|^7.0|^8.0",
-                "symfony/http-kernel": "^6.4|^7.0|^8.0",
-                "symfony/mime": "^6.4|^7.0|^8.0",
-                "symfony/rate-limiter": "^6.4|^7.0|^8.0"
+                "symfony/cache": "^7.4|^8.0",
+                "symfony/clock": "^7.4|^8.0",
+                "symfony/dependency-injection": "^7.4|^8.0",
+                "symfony/expression-language": "^7.4|^8.0",
+                "symfony/http-kernel": "^7.4|^8.0",
+                "symfony/mime": "^7.4|^8.0",
+                "symfony/rate-limiter": "^7.4|^8.0"
             },
             "type": "library",
             "autoload": {
@@ -3055,7 +3054,7 @@
             "description": "Defines an object-oriented layer for the HTTP specification",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/http-foundation/tree/v7.4.14"
+                "source": "https://github.com/symfony/http-foundation/tree/v8.1.10"
             },
             "funding": [
                 {
@@ -3075,7 +3074,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-06-11T07:31:44+00:00"
+            "time": "2026-10-27T12:24:10+00:00"
         },
         {
             "name": "symfony/http-kernel",
@@ -3365,16 +3364,16 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.38.2",
+            "version": "v1.43.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6"
+                "reference": "122889ed24dc000165bcbfd77ec412f15cbdfc6a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
-                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/122889ed24dc000165bcbfd77ec412f15cbdfc6a",
+                "reference": "122889ed24dc000165bcbfd77ec412f15cbdfc6a",
                 "shasum": ""
             },
             "require": {
@@ -3426,7 +3425,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.38.2"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.43.3"
             },
             "funding": [
                 {
@@ -3446,20 +3445,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-27T06:59:30+00:00"
+            "time": "2026-10-28T09:35:49+00:00"
         },
         {
             "name": "symfony/polyfill-php83",
-            "version": "v1.38.2",
+            "version": "v1.43.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php83.git",
-                "reference": "796a26abb75ce49f3a84433cd81bf1009d73d5f8"
+                "reference": "80ccff923a8d61f73ebe9da0aa94e25232f004ce"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php83/zipball/796a26abb75ce49f3a84433cd81bf1009d73d5f8",
-                "reference": "796a26abb75ce49f3a84433cd81bf1009d73d5f8",
+                "url": "https://api.github.com/repos/symfony/polyfill-php83/zipball/80ccff923a8d61f73ebe9da0aa94e25232f004ce",
+                "reference": "80ccff923a8d61f73ebe9da0aa94e25232f004ce",
                 "shasum": ""
             },
             "require": {
@@ -3506,7 +3505,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php83/tree/v1.38.2"
+                "source": "https://github.com/symfony/polyfill-php83/tree/v1.43.0"
             },
             "funding": [
                 {
@@ -3526,7 +3525,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-27T06:51:48+00:00"
+            "time": "2026-09-25T15:50:05+00:00"
         },
         {
             "name": "symfony/polyfill-php84",
